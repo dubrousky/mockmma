@@ -1,0 +1,92 @@
+Newsgroups: sci.math.symbolic
+Subject: more on Mock Mathematica (tm) in Common Lisp
+Summary: Programs that simulate Mathematica are available.
+Expires: 
+References:
+Sender: Richard Fateman
+Reply-To: fateman@peoplesparc.Berkeley.EDU (Richard Fateman)
+Followup-To: 
+Distribution: 
+Organization: UCB CS
+Keywords: mathematica Common Lisp
+
+Faithful readers of this list may be aware of this program, but
+it's gotten somewhat more capable, and can now be FTP'd from
+here.  Here's an example of what it can do:
+......
+<cl> (tl)
+
+In[1] := Timing[RatExpand[(x+y)^4]]
+
+                       4      3        2  2        3    4
+Out[1] = {0.0 Second, x  + 4 x  y + 6 x  y  + 4 x y  + y }
+In[2] := Timing[RatExpand[(x+y+z)^15];done]
+
+Out[2] = {0.23300001 Second, done}
+In[3] := D[ArcTanh[x]^2,x]
+
+         2 ArcTanh[x]
+Out[3] = ------------
+                 2
+            1 - x
+In[4] := Int[%,x]
+
+                     2
+Out[4] = (ArcTanh[x])
+In[5] := Int[x^n,x]
+
+                    n
+Out[5] = integrate[x , x]
+In[6] := integrate[y_^m_,y_]:= (y^(m+1)-1)/(m+1)
+
+In[7] := Int[x^n,x]
+
+               1 + n
+         -1 + x
+Out[7] = -----------
+            1 + n
+In[8] := Exit
+
+Exited to Lisp
+
+t 
+<cl> 
+....
+That line [2] seems to be rather faster than Mathematica on the same
+machine. The lines 3-7 illustrate the primitive "derivative-divides"
+integration package, and the possibility of enhancing it by
+pattern matching.
+....
+
+To reconstruct this on your unix system (I'm using Allegro Common Lisp,
+and it should work on any hardware supporting it; it should also work
+in other Common Lisps), do the following:
+
+cd someplace with room for a few 100k bytes
+type:
+
+ftp peoplesparc.Berkeley.EDU
+ anonymous   %%response to name prompt
+ your name  %%response to password prompt
+image    %% or maybe, for some ftp systems, binary rather than image
+cd pub
+get mma.tar
+quit
+
+%%now you're out of ftp
+tar xvf mma.tar
+uncompress mma.src/*
+
+%% you are now the proud possessor of the files
+%% you should probably try to compile them.
+
+.......
+If you get a copy, I would appreciate e-mail (to fateman@Berkeley.EDU)
+advising me of that fact, so I can keep you up on new features or
+improvements. Of course I'd like to know of any
+problems or successes you have.  On the other hand, I can't promise
+to fix any particular problems, and there is no warranty.  If you
+are interested in enhancing the behavior of this system for use
+by others, please tell me. 
+
+Richard Fateman

@@ -1,0 +1,131 @@
+From gotoda@is.s.u-tokyo.ac.jp Mon Nov 25 06:25:17 1991
+From: gotoda@is.s.u-tokyo.ac.jp
+Message-Id: <9111251425.AA09273@nami>
+To: fateman@peoplesparc.Berkeley.EDU
+Cc: fateman@peoplesparc.Berkeley.EDU
+In-Reply-To: Richard Fateman's message of Fri, 22 Nov 91 07:58:21 PST <9111221558.AA02033@peoplesparc.Berkeley.EDU>
+Subject: KCL version
+Status: R
+
+Dear Professor Fateman:
+
+Here I list the changes that I made. (On KCL, Nov 13 1990 version, SUN-OS 4.1)
+
+1. In math.lisp, I commented this out.
+
+;;(deftype Integer() 'integer)
+;;(deftype Rational() 'rational)
+
+(This may be unnecessary. For safety reasons, I commented them out.)
+
+2. In eval.lisp, I commented this out.
+
+;(SetAttribute 'Set 'HoldFirst);; we don't use this -- Set is in Lisp
+
+3. To use the KCL specific error-set, I commented this out in eval.lisp, 
+
+;(import '(excl::errorset))  ;; your system may differ....
+
+and made the changes below.
+
+;;   (setq hin (multiple-value-bind
+;;          (isnoerr val)
+;;          (errorset (mma::p)t)
+;;          (if isnoerr val (clear-input t))))
+
+   (setq hin (multiple-value-bind
+	  (iserr val)
+	  (system:error-set '(mma::p))
+	  (if iserr (clear-input t) val)))
+
+;;   (setq h (multiple-value-bind
+;;        (isnoerr val)
+;;        (errorset (meval hin) t)
+;;        (if isnoerr val (list 'Hold hin))))
+
+   (setq h (multiple-value-bind
+	(iserr val)
+	(system:error-set (list 'meval (list 'quote hin)))
+	(if iserr (list 'Hold hin) val)))
+
+4. KCL's delete-if is non-destructive. I modified poly.lisp as follows:
+
+         ;;(t (delete-if #'coefzerofunp x :start pos))))))
+
+	  (t (setq x (delete-if #'coefzerofunp x :start pos)))))))
+
+	;;(delete-if #' identity temp :start (+ 2 k))
+
+	(setq temp (delete-if #' identity temp :start (+ 2 k)))
+
+(These changes will be unnecessary in later versions.)
+
+5. I modified init2.lisp as follows.
+
+(defmacro declaim (x) `(proclaim ', x))
+(or (find-package 'excl)
+    (make-package 'excl))
+
+(load "mma")
+(use-package :mma)
+(in-package :mma)
+(shadow 'user::set)
+(shadow 'Exp)
+(shadow 'Log)
+(shadow 'Sin)
+(shadow 'Cos)
+(shadow 'Tan)
+(shadow 'Sinh)
+(shadow 'Cosh)
+(import 'user::declaim)
+
+(To use built-in functions exp, log, sin, ...,
+ one needs to redefine them, for instance, 
+
+  (defun sin(x)
+	(if (numberp x) (conv (lisp::sin x)) (ulist 'Sin x)))
+
+
+  where "conv" should convert real number (1.2345s0) to the corresponding
+  internal expression in mma ((Times (Real 1 2345) s0)). Under implementation.
+)
+
+6. Finally, I modified uconsalt.lisp as follows.
+
+;;(defmacro ulist(&rest l)(cond ((null l)nil)
+;;	          (t `(hcons ,(car l) (ulist ,@(cdr l)) *uniq-table*))))
+
+(defmacro ulist(&rest l)(cond ((null l)nil)
+    	  (t `(ucons ,(car l) (ulist ,@(cdr l))))))
+
+
+
+Speed (On Solbone, 2 sparc chips, 32 Mbyte main memory)
+-----
+
+In[11] := Timing[RatExpand[(x+y+z)^15];done]
+
+OUT[11] = 0.7666666666666666 SECOND[DONE]
+In[12] :=  Timing[RatExpand[(x+y+z)^25];done]
+
+OUT[12] = 4.266666666666667 SECOND[DONE]
+In[13] :=  Timing[RatExpand[(x+y+z)^50];done]
+
+OUT[13] = 46.2 SECOND[DONE]
+In[14] :=  Timing[RatExpand[(x+y+z)^100];done]
+
+OUT[14] = 447.8166666666667 SECOND[DONE]
+
+
+---------------------------------------------------------------
+When I wrote "without hcons, mma is too slow", I didn't know
+how to compile files and functions. Blame me for my innocence.
+Mma is very fast. With proper implementation of 'hcons', it 
+will become much faster.
+
+Thank you very much for your continuous help.
+
+Sincerely yours, 
+
+Hironobu Gotoda
+

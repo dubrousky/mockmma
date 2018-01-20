@@ -1,0 +1,41 @@
+From eps@princeton.edu Tue Oct 22 08:59:00 1991
+
+Hi again,
+
+I got it working under lucid.  I needed to change a few things.  Here they are
+for future reference.
+
+1.  In match.lisp, I commented this out.
+
+;(deftype Integer() 'integer)
+;(deftype Rational() 'rational)
+
+2.  In eval.lisp, I commented this out.
+
+;(SetAttribute 'Set 'HoldFirst) ;; we don't use this -- Set is in Lisp
+
+3.  I modified init2.lisp as follows
+
+(defmacro declaim (x) `(proclaim ',x))
+(or (find-package 'excl)
+    (make-package 'excl))
+
+(defmacro excl::errorset (&rest forms)
+  `(values t ,(car forms)))
+
+(load "mma")
+(use-package :mma)
+(in-package :mma)
+(shadow 'user::set)
+(import 'user::declaim)
+
+
+4.  In uconsalt.lisp, I changed the definition of ulist which used to use hcons,
+    undefined here.
+
+;(defmacro ulist(&rest l)(cond ((null l)nil)
+;			      (t `(hcons ,(car l) (ulist ,@(cdr l)) uniqtab))))
+
+(defmacro ulist(&rest l)(cond ((null l)nil)
+			      (t `(cons ,(car l) (ulist ,@(cdr l))))))
+

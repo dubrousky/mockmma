@@ -1,0 +1,122 @@
+In this directory (peoplesparc.Berkeley.EDU: ~ftp:pub/mma.src)
+accessible by anonymous ftp, are the underpinnings of a common-lisp
+implementation of a small and efficient algebra system. The intention
+is to be as fast as possible without making major concessions to
+usefulness.  Absolute brevity in code is not a goal, nor is complete
+perspicuity, if it is inconsistent with efficiency.
+
+As far as efficiency goes, it is expected that for similar problems,
+the code would be faster than Macsyma's rational function package,
+Reduce, or Maple, and generally much faster than Mathematica and
+much^2 faster than Macsyma's general representation.
+
+It is our intention that no one would have any reasonable hope of
+making a package that was much faster, at least while coding in Lisp,
+and that there would be no need to look inside the package for most
+users. It is also our hope that even by going to C or assembly
+language, not much of a speedup could be expected.  Of course
+eliminating some features (e.g., going to fixed precision rather than
+arbitrary precision integers), can result in savings.
+
+How general a set of features do we need?  For example, I consider
+multi-variate polynomial arithmetic essential, as well as arbitrary
+precision integer coefficients.  By contrast, computation in
+non-commutative variables is not supported.  Although only a simple
+polynomial GCD is used, more elaborate and faster versions have been
+written (not debugged).
+
+The meaning of coefficients in the canonical form package (poly.lisp
+can be altered (see definition of coefp) to any numeric type (or all
+numeric types)or something else (though there should be
+ redefinition of coefficient operations like * + ^ zerop etc.)
+
+Non-portable CL stuff: We believe that by using the loading file
+init2.lisp, other CLs other than the one we used, can work.  In
+particular, Lucid and KCL.  Here are some notes though.
+
+1. we use both cases, but not usually in an essential way, if
+   you don't MIND YOUR COMPUTER SHOUTING AT YOU. This affects the
+   definition of Set in eval.lisp which had better be distinct (i.e.
+   mma::Set and not LISP:SET.)  2. we use errorset (excl:errorset) in
+   file eval.lisp. You could
+   change it for something else in your lisp. See the import statement
+   near the top.  3. hcons is allegro-CL specific although
+   machine-independent in
+   that dialect. If you get stuck on this, try renaming the file
+   uconsalt.lisp to ucons1.lisp, and running that way
+
+For some people the major or only item of interest here is the parser,
+which parses the Mathematica (tm of WRI) language.  The parser for
+mathematica is in file parser.lisp.  To use it, do (in Allegro CL)
+(set-case-mode :case-sensitive-lower) :ld mma :ld parser (use-package
+"math-parser"), then use the parser (p).
+
+The top level for a simple mathematica-like system is very
+incompletely programmed in eval.lisp.  To use it, 
+:ld init (in-package :mma)
+ (tl)
+
+hcons is a hashing cons package for allegro CL.  ucons.lisp is a
+unique-ification package using hcons that should make the simp stuff,
+as well as the polynomial stuff, work better if the kernels are other
+than atoms.  Non-allegro CL systems can either define hcons in some
+other way, or intercept all calls on it by redefining ucons, uappend,
+ulist, umapcar.  as their corresponding programs cons, append, list,
+mapcar; or uniq-ify their results (see paper on this..)
+
+index to files
+
+README - this file 
+mma.lisp - symbols used by mma, put in a common package 
+pf.lisp - print formatting programs used by display
+disp1.lisp - display of formatted expressions parser.
+lisp - Mma to Lisp parser
+eval.lisp - top-level, evaluator 
+simp1.lisp - interchange between
+Lisp-prefix form and rational simplification 
+rat1.lisp - rational function factored form 
+poly.lisp - polynomial form 
+match.lisp -(partial) implementation of Mma pattern matching 
+lucid.readme, kcl.readme - note on portability
+
+hcons.fasl - allegro CL hashing cons used by ucons only.  
+ucons1.lisp- unique cons 
+uconsalt.lisp - if you can't run ucons/hcons 
+stack1.lisp - implementation of stack used by match and eval
+
+init.lisp - file to load all the stuff that is in this directory
+init2.lisp - file to load into a non-allegro system 
+diffrat.lisp - differentiation, derivative-divides Integration
+copyright - copyright and warranties notice
+
+the subdirectory ../mma.sparc.bin if present
+has "fasl" object files for the allegro CL sun4 (sparc) version.  to
+be of interest.  not included in the distribution yet: factorization,
+rational integration, bigfloat arithmetic & elem. funs.
+
+Other hints.
+
+Try the commands D[Log[x],x], Int[Log[x],x], Simp[(a+b)^2+1],
+Expand[(a+b)^2], sin[I], 4atan[1],
+
+Warranty: See the file, copyright in this directory.
+
+the author for other uses.  SEE copyright file.
+
+11 January, 1991 last modified 13 September, 1991 4 October, 1991 (to
+remove the joke "L-mathematica" name on the
+		   header, primarily) 21 April, 1992 minor changes
+here and there to the parser and elsewhere 14 August, 1992 copyright
+notice Richard J. Fateman, fateman@cs.berkeley.edu
+
+Berkeley CA.
+
+
+
+
+
+
+
+
+
+
